@@ -11,7 +11,7 @@ from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 
 # File Paths
-DATA_DIR = "/Users/Mustafa_1/Mustafa_Mac/US_Life/UChicago/Year 1/Student Employment/RA-Ship/RAship_Code/Rally_Tool/nurburgring_data"
+DATA_DIR = "nurburgring_data"
 FILES = {
     "sections": os.path.join(DATA_DIR, "sections.ini"),
     "surfaces": os.path.join(DATA_DIR, "surfaces.ini"),
