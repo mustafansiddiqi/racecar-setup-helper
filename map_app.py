@@ -10,9 +10,7 @@ from io import BytesIO
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 
-# ----------------------------------------------------------
-# 1. File Paths
-# ----------------------------------------------------------
+# File Paths
 DATA_DIR = "/Users/Mustafa_1/Mustafa_Mac/US_Life/UChicago/Year 1/Student Employment/RA-Ship/RAship_Code/Rally_Tool/nurburgring_data"
 FILES = {
     "sections": os.path.join(DATA_DIR, "sections.ini"),
@@ -24,9 +22,8 @@ FILES = {
 NURBURGRING_LAT = 50.3356
 NURBURGRING_LON = 6.9476
 
-# ----------------------------------------------------------
-# 2. Utilities – INI & GPX
-# ----------------------------------------------------------
+# Utilities – INI & GPX
+
 def read_ini(filepath):
     cfg = configparser.ConfigParser()
     cfg.optionxform = str
@@ -72,9 +69,9 @@ def track_distance(x, y):
     seg = np.insert(seg, 0, 0)
     return np.cumsum(seg)
 
-# ----------------------------------------------------------
-# 3. Track visualization – elevation-colored line
-# ----------------------------------------------------------
+
+# Track visualization
+
 def plot_track_colored_by_elevation(x, y, ele, sections, dist):
     fig, ax = plt.subplots(figsize=(10, 10))
 
@@ -118,9 +115,8 @@ def plot_altitude(ele, dist):
     ax.set_ylabel("Elevation (m)")
     st.pyplot(fig)
 
-# ----------------------------------------------------------
-# 4. Track statistics for setup logic
-# ----------------------------------------------------------
+# Track statistics for setup logic
+
 def compute_track_stats(ele, dist):
     # gradient in % between points
     d_dist = np.diff(dist)
@@ -142,9 +138,8 @@ def compute_track_stats(ele, dist):
     }
     return stats
 
-# ----------------------------------------------------------
-# 5. OpenWeather API helper (hard-coded key)
-# ----------------------------------------------------------
+# OpenWeather API helper (CHANE API KEY)
+
 OPENWEATHER_API_KEY = "48b8cf776845b1b3b76e183c60826568"
 
 def get_openweather_api_key():
@@ -177,12 +172,12 @@ def fetch_weather(lat=NURBURGRING_LAT, lon=NURBURGRING_LON):
     }
     return weather
 
-# ----------------------------------------------------------
-# 6. Setup recommendation engine (Option A + braking/damping/etc.)
-# ----------------------------------------------------------
+# Setup recommendation engine
+
 def recommend_setup(car, track_name, track_stats, weather):
     #  baselines for a generic car
     setup = {
+        
         # Alignment
         "front_camber": -2.5,
         "rear_camber": -2.0,
@@ -264,7 +259,7 @@ def recommend_setup(car, track_name, track_stats, weather):
         setup["rear_rebound"] += 1
         setup["notes"].append("Base car is stiff → keep springs/dampers slightly firmer.")
 
-    #  Track-based adjustments (Nordschleife heuristics) 
+    #  Track-based adjustments (Nürburgring Nordschleife heuristics) 
     if "nürburgring" in track_name.lower():
         # Nordschleife: bumpy, high-speed, big compressions
         if elev_range > 250:
@@ -375,9 +370,8 @@ def recommend_setup(car, track_name, track_stats, weather):
 
     return setup
 
-# ----------------------------------------------------------
-# 7. PDF export
-# ----------------------------------------------------------
+# PDF export
+
 def generate_setup_pdf(car, track_name, weather, setup):
     buffer = BytesIO()
     c = canvas.Canvas(buffer, pagesize=A4)
@@ -475,9 +469,8 @@ def generate_setup_pdf(car, track_name, weather, setup):
     buffer.seek(0)
     return buffer
 
-# ----------------------------------------------------------
-# 8. Streamlit UI
-# ----------------------------------------------------------
+# Streamlit UI
+
 def main():
     st.title("Race Setup Helper – Track + Elevation + Weather")
 
