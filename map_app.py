@@ -9,9 +9,169 @@ from matplotlib.collections import LineCollection
 from io import BytesIO
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
+import time
+
+# UI CSS
+
+st.markdown("""
+<style>
+
+    /* ---------------------------------------------------
+       FONT IMPORTS
+    --------------------------------------------------- */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600&display=swap');
+
+    /* ---------------------------------------------------
+       GLOBAL APP BACKGROUND (Dark Navy + Texture)
+    --------------------------------------------------- */
+    .stApp {
+        background-color: #0A1224;
+        background-image: url('https://www.transparenttextures.com/patterns/asfalt-light.png');
+        color: #E6E8EC;
+        font-family: 'Inter', sans-serif;
+    }
+
+    /* ---------------------------------------------------
+       HEADERS
+    --------------------------------------------------- */
+    h1, h2, h3, h4, h5 {
+        color: #F5F7FA !important;
+        font-family: 'Orbitron', sans-serif !important;
+        letter-spacing: 0.5px;
+    }
+
+    /* ---------------------------------------------------
+       GENERAL TEXT
+    --------------------------------------------------- */
+    p, span, label, .stMarkdown, .stText, .stCaption {
+        color: #E6E8EC !important;
+        font-family: 'Inter', sans-serif !important;
+        font-size: 15px;
+    }
+
+    /* ---------------------------------------------------
+       SIDEBAR
+    --------------------------------------------------- */
+    [data-testid="stSidebar"] {
+        background-color: #0D1630 !important;
+        color: #E6E8EC !important;
+        border-right: 1px solid #1E2A4A;
+    }
+
+    [data-testid="stSidebar"] * {
+        color: #ECEFF4 !important;
+        font-family: 'Inter', sans-serif !important;
+    }
+
+    /* ---------------------------------------------------
+       INPUT FIELDS (TEXT + NUMBER)
+    --------------------------------------------------- */
+    .stTextInput input,
+    .stNumberInput input {
+        background-color: #162038 !important;
+        border: 1px solid #2B3A55 !important;
+        color: #FFFFFF !important;
+        border-radius: 6px !important;
+        font-family: 'Inter', sans-serif !important;
+    }
+
+    /* ---------------------------------------------------
+       SELECTBOX — NAVY BOX + WHITE TEXT
+    --------------------------------------------------- */
+
+    /* Visible selectbox container (works for all selectboxes, incl. "Select track") */
+    .stSelectbox > div > div {
+    background-color: #162038 !important;
+    border: 1px solid #2B3A55 !important;
+    border-radius: 6px !important;
+
+    /* NEW: Increase vertical size */
+    padding: 10px 12px !important;     /* more vertical padding */
+    min-height: 45px !important;       /* ensure box is tall enough */
+
+    display: flex !important;
+    align-items: center !important;    /* vertically center text */
+}
+
+    /* Text & arrow inside the selectbox */
+    .stSelectbox > div > div * {
+        color: #FFFFFF !important;
+        font-family: 'Inter', sans-serif !important;
+    }
+
+    /* Dropdown menu panel */
+    .stSelectbox [role="listbox"] {
+        background-color: #0D1630 !important;
+        border: 1px solid #2B3A55 !important;
+        border-radius: 6px !important;
+    }
+
+    /* Dropdown options */
+    .stSelectbox [role="option"] {
+        background-color: #0D1630 !important;
+        color: #FFFFFF !important;
+        font-family: 'Inter', sans-serif !important;
+    }
+
+    .stSelectbox [role="option"]:hover {
+        background-color: #182644 !important;
+    }
+
+    /* ---------------------------------------------------
+       BUTTONS
+    --------------------------------------------------- */
+    .stButton>button {
+        background-color: #1A2A49 !important;
+        color: #FFFFFF !important;
+        border: 1px solid #2F456B !important;
+        border-radius: 6px !important;
+        padding: 0.4rem 0.8rem !important;
+        font-family: 'Orbitron', sans-serif !important;
+        letter-spacing: 0.5px;
+        transition: 0.15s;
+    }
+
+    .stButton>button:hover {
+        background-color: #253861 !important;
+        border-color: #3C5582 !important;
+    }
+
+    /* ---------------------------------------------------
+       DOWNLOAD BUTTON
+    --------------------------------------------------- */
+    .stDownloadButton > button {
+        background-color: #1A2A49 !important;
+        color: #FFFFFF !important;
+        border: 1px solid #2F456B !important;
+        border-radius: 6px !important;
+        padding: 0.4rem 0.8rem !important;
+        font-family: 'Orbitron', sans-serif !important;
+        letter-spacing: 0.5px;
+        transition: 0.15s;
+    }
+
+    .stDownloadButton > button:hover {
+        background-color: #253861 !important;
+        border-color: #3C5582 !important;
+    }
+
+    /* ---------------------------------------------------
+       EXPANDERS
+    --------------------------------------------------- */
+    .streamlit-expanderHeader {
+        background-color: #162038 !important;
+        color: #FFFFFF !important;
+        border-radius: 4px !important;
+    }
+
+</style>
+""", unsafe_allow_html=True)
+
 
 # File Paths
-DATA_DIR = "nurburgring_data"
+
+DATA_DIR = "/Users/Mustafa_1/Mustafa_Mac/US_Life/UChicago/Year 1/Student Employment/RA-Ship/RAship_Code/Rally_Tool/nurburgring_data"
 FILES = {
     "sections": os.path.join(DATA_DIR, "sections.ini"),
     "surfaces": os.path.join(DATA_DIR, "surfaces.ini"),
@@ -22,7 +182,8 @@ FILES = {
 NURBURGRING_LAT = 50.3356
 NURBURGRING_LON = 6.9476
 
-# Utilities – INI & GPX
+
+# Utilities – INI/GPX
 
 def read_ini(filepath):
     cfg = configparser.ConfigParser()
@@ -70,7 +231,7 @@ def track_distance(x, y):
     return np.cumsum(seg)
 
 
-# Track visualization
+# Track visualization – elevation-colored line
 
 def plot_track_colored_by_elevation(x, y, ele, sections, dist):
     fig, ax = plt.subplots(figsize=(10, 10))
@@ -115,6 +276,7 @@ def plot_altitude(ele, dist):
     ax.set_ylabel("Elevation (m)")
     st.pyplot(fig)
 
+
 # Track statistics for setup logic
 
 def compute_track_stats(ele, dist):
@@ -138,7 +300,8 @@ def compute_track_stats(ele, dist):
     }
     return stats
 
-# OpenWeather API helper (CHANE API KEY)
+
+# OpenWeather API helper (hard-coded key)
 
 OPENWEATHER_API_KEY = "48b8cf776845b1b3b76e183c60826568"
 
@@ -172,12 +335,12 @@ def fetch_weather(lat=NURBURGRING_LAT, lon=NURBURGRING_LON):
     }
     return weather
 
-# Setup recommendation engine
+
+# Setup recommendation engine (Option A + braking/damping/etc.)
 
 def recommend_setup(car, track_name, track_stats, weather):
     #  baselines for a generic car
     setup = {
-        
         # Alignment
         "front_camber": -2.5,
         "rear_camber": -2.0,
@@ -259,7 +422,7 @@ def recommend_setup(car, track_name, track_stats, weather):
         setup["rear_rebound"] += 1
         setup["notes"].append("Base car is stiff → keep springs/dampers slightly firmer.")
 
-    #  Track-based adjustments (Nürburgring Nordschleife heuristics) 
+    #  Track-based adjustments (Nordschleife heuristics) 
     if "nürburgring" in track_name.lower():
         # Nordschleife: bumpy, high-speed, big compressions
         if elev_range > 250:
@@ -370,6 +533,7 @@ def recommend_setup(car, track_name, track_stats, weather):
 
     return setup
 
+
 # PDF export
 
 def generate_setup_pdf(car, track_name, weather, setup):
@@ -469,10 +633,11 @@ def generate_setup_pdf(car, track_name, weather, setup):
     buffer.seek(0)
     return buffer
 
-# Streamlit UI
+
+# 8. Streamlit UI
 
 def main():
-    st.title("Race Setup Helper – Track + Elevation + Weather")
+    st.title("Race Setup Helper")
 
     #  Track selection 
     track_name = st.selectbox("Select track", ["Nürburgring Nordschleife"])
@@ -512,6 +677,13 @@ def main():
         "base_susp": base_susp,
     }
 
+   #  Visualizations 
+    st.subheader("Track Map & Elevation")
+    plot_track_colored_by_elevation(x, y, ele, sections, dist)
+
+    st.subheader("Altitude Profile")
+    plot_altitude(ele, dist)
+
     #  Weather fetch 
     st.subheader("Weather at Nürburgring")
     weather = None
@@ -528,17 +700,12 @@ def main():
     else:
         st.info("Using default dry / ~20°C assumptions if no weather is fetched.")
 
-    #  Visualizations 
-    st.subheader("Track Map & Elevation")
-    plot_track_colored_by_elevation(x, y, ele, sections, dist)
-
-    st.subheader("Altitude Profile")
-    plot_altitude(ele, dist)
-
     #  Setup recommendation 
     st.subheader("Recommended Setup")
     setup = None
     if st.button("Compute setup recommendation"):
+        with st.spinner("Computing optimal setup…"):
+            time.sleep(2)
         setup = recommend_setup(car, track_name, track_stats, weather)
 
         st.markdown(f"### For: **{car_name}** on {track_name}")
@@ -588,13 +755,13 @@ def main():
         # PDF export button
         pdf_buffer = generate_setup_pdf(car, track_name, weather, setup)
         st.download_button(
-            label="📄 Download setup as PDF",
+            label=" Download setup as PDF",
             data=pdf_buffer,
             file_name=f"{car_name.replace(' ', '_')}_{track_name.replace(' ', '_')}_setup.pdf",
             mime="application/pdf"
         )
 
-    st.caption("Prototype sim-racing style setup helper – tweak the heuristics to your taste.")
+    st.caption("Prototype race car setup helper.")
 
 if __name__ == "__main__":
     main()
